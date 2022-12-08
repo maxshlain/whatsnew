@@ -16,7 +16,7 @@ public class GithubProxyTests
     [Fact]
     public void Constructor_DoesNotThrow()
     {
-        var proxy = new GithubProxy("");
+        var proxy = new GithubProxy("","");
         
         proxy.Should().NotBeNull();
     }
@@ -24,16 +24,22 @@ public class GithubProxyTests
     [Fact]
     public async Task GetDoesNotThrow()
     {
-        var pat = new AppSettingsAccessor()
+        var settings = new AppSettingsAccessor()
             .Build()
-            .GetSection("Github")
-            .GetSection("Pat")
-            .Value;
-        
-        var proxy = new GithubProxy(pat ?? throw new Exception("Pat not found"));
+            .GetSection("Github");
 
-        var result = await proxy.GetIssueData("");
-        _testOutputHelper.WriteLine(result);
+        var userName = settings 
+            .GetSection("UserName")
+            .Value ?? throw new Exception("UserName not found");
+
+        var pat = settings 
+            .GetSection("Pat")
+            .Value ?? throw new Exception("Pat not found");
+        
+        var proxy = new GithubProxy(userName, pat );
+
+        var result = await proxy.GetIssueData("https://api.github.com/repos/maxshlain/whatsnew/issues/1");
+        _testOutputHelper.WriteLine(result.ToString());
         result.Should().NotBeNull();
     }
 }

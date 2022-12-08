@@ -8,6 +8,8 @@ var builder = new ConfigurationBuilder()
     .AddJsonFile("appsettings.development.json", optional: true, reloadOnChange: true);
 
 var configuration = builder.Build();
+var userName = configuration.GetSection("GitHub").GetSection("UserName").Value
+    ?? throw new NullReferenceException();
 var pat = configuration.GetSection("GitHub").GetSection("Pat").Value
     ?? throw new NullReferenceException();
 
@@ -18,7 +20,7 @@ var issue = new MonitoredItem(
     Status: ""
 );
 
-var provider = new GithubInfoProvider(new GithubProxy(pat));
+var provider = new GithubInfoProvider(new GithubProxy(userName, pat));
 
 var hasUpdate = provider.TryGetInfo(issue, out var updatedIssue);
 
