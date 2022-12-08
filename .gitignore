@@ -354,3 +354,5 @@ MigrationBackup/
 .DS_Store
 
 *.development.json
+
+.vscode
