@@ -22,13 +22,6 @@ var issue = new MonitoredItem(
 
 var provider = new GithubInfoProvider(new GithubProxy(userName, pat));
 
-var hasUpdate = provider.TryGetInfo(issue, out var updatedIssue);
+var (changed, item) = await provider.TryGetInfoAsync(issue);
 
-if (hasUpdate)
-{
-    Console.WriteLine($"Issue {updatedIssue.Url} has been updated");
-}
-else
-{
-    Console.WriteLine($"Issue {issue.Url} has not been updated");
-}
+Console.WriteLine($"Changed: {changed}");

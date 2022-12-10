@@ -3,6 +3,16 @@ using Whatsnew.Console.Github;
 
 namespace Whatsnew.Console;
 
+public interface IGithubProxy
+{
+    /// <summary>
+    /// Gets github issue data json
+    /// </summary>
+    /// <param name="issueUrl"></param>
+    /// <returns></returns>
+    Task<MonitoredItem> GetIssueData(string issueUrl);
+}
+
 public class GithubProxy : IGithubProxy
 {
     const string issuesUrl = "https://api.github.com/repos/maxshlain/whatsnew/issues";
@@ -17,12 +27,10 @@ public class GithubProxy : IGithubProxy
     }
     public async Task<MonitoredItem> GetIssueData(string issueUrl)
     {
-        var json = await issuesUrl
+        var gitHubIssue = await issuesUrl
             .WithHeader("User-Agent", "Flurl")
             .WithBasicAuth(_userName, _pat)
-            .GetStringAsync();
-
-        var gitHubIssue = System.Text.Json.JsonSerializer.Deserialize<GithubIssueModel[]>(json);
+            .GetJsonAsync<GithubIssueModel[]>();
 
         var firstItem = gitHubIssue?.FirstOrDefault(i => i.url == issueUrl)
         ?? throw new Exception("No issues found");
@@ -36,34 +44,4 @@ public class GithubProxy : IGithubProxy
         
         return item;
     }
-}
-
-public interface IGithubProxy
-{
-    /// <summary>
-    /// Gets github issue data json
-    /// </summary>
-    /// <param name="issueUrl"></param>
-    /// <returns></returns>
-    Task<MonitoredItem> GetIssueData(string issueUrl);
-}
-
-public class GithubInfoProvider: IInfoProvider
-{
-    private readonly IGithubProxy _proxy;
-
-    public GithubInfoProvider(IGithubProxy proxy)
-    {
-        _proxy = proxy;
-    }
-    
-    public bool TryGetInfo(MonitoredItem item, out MonitoredItem updated)
-    {
-        throw new NotImplementedException();
-    }
-}
-
-public interface IInfoProvider
-{
-    bool TryGetInfo(MonitoredItem item, out MonitoredItem updated);
 }
