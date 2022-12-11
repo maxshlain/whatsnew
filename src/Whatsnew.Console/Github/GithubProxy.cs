@@ -5,31 +5,26 @@ namespace Whatsnew.Console;
 
 public interface IGithubProxy
 {
-    /// <summary>
-    /// Gets github issue data json
-    /// </summary>
-    /// <param name="issueUrl"></param>
-    /// <returns></returns>
     Task<MonitoredItem> GetIssueData(string issueUrl);
 }
+
+public record GithubProxySettings(string UserName, string Pat);
 
 public class GithubProxy : IGithubProxy
 {
     const string issuesUrl = "https://api.github.com/repos/maxshlain/whatsnew/issues";
-  
-    private readonly string _pat;
-    private readonly string _userName;
+    private readonly GithubProxySettings _settings;
 
-    public GithubProxy(string userName, string pat)
+    public GithubProxy(GithubProxySettings settings)
     {
-        _userName = userName;
-        _pat = pat;
+        _settings = settings;
     }
+
     public async Task<MonitoredItem> GetIssueData(string issueUrl)
     {
         var gitHubIssue = await issuesUrl
             .WithHeader("User-Agent", "Flurl")
-            .WithBasicAuth(_userName, _pat)
+            .WithBasicAuth(_settings.UserName, _settings.Pat)
             .GetJsonAsync<GithubIssueModel[]>();
 
         var firstItem = gitHubIssue?.FirstOrDefault(i => i.url == issueUrl)

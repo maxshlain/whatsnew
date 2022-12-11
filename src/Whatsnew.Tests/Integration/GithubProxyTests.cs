@@ -16,7 +16,7 @@ public class GithubProxyTests
     [Fact]
     public void Constructor_DoesNotThrow()
     {
-        var proxy = new GithubProxy("","");
+        var proxy = new GithubProxy(new GithubProxySettings("user", "pat"));
         
         proxy.Should().NotBeNull();
     }
@@ -36,7 +36,7 @@ public class GithubProxyTests
             .GetSection("Pat")
             .Value ?? throw new Exception("Pat not found");
         
-        var proxy = new GithubProxy(userName, pat );
+        var proxy = new GithubProxy(new GithubProxySettings(userName, pat));
 
         var result = await proxy.GetIssueData("https://api.github.com/repos/maxshlain/whatsnew/issues/1");
         _testOutputHelper.WriteLine(result.ToString());
