@@ -1,27 +1,34 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Whatsnew.Console;
 
 internal class WhatsNewHostedService : BackgroundService
 {
-    private readonly ILogger<WhatsNewHostedService>  _logger;
-    private readonly GithubInfoProvider _provider;
+    private WhatsNewPollingService _service;
 
-    public WhatsNewHostedService(ILogger<WhatsNewHostedService> logger, GithubInfoProvider provider)
+    public WhatsNewHostedService(
+        ILogger<WhatsNewHostedService> logger, 
+        WhatsNewPollingService service)
     {
-        _logger = logger;
-        _provider = provider;
+        _service = service;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var issue = new MonitoredItem(
-            Url: "https://api.github.com/repos/maxshlain/whatsnew/issues/1",
-            Type: "Github.Issue",
-            Status: ""
-        );
+        while(true)
+        {
+            if (stoppingToken.IsCancellationRequested)
+            {
+                break;
+            }
 
-        var (changed, item) = await _provider.TryGetInfoAsync(issue);
-        _logger.LogInformation("Changed: {Changed}", changed);
+            await _service.PollAsync();
+
+            if (stoppingToken.IsCancellationRequested)
+            {
+                break;
+            }
+
+            await _service.Delay();
+        }
     }
 }

@@ -18,10 +18,16 @@ public static class AppConfigurator
             ?? throw new NullReferenceException();
 
         var proxySettings = new GithubProxySettings(userName, pat);
+        var pollingSettings = new WhatsNewPollingServiceSettings(
+            Convert.ToInt32(configuration.GetSection("PollingService").GetSection("PollingDelayInSeconds").Value)
+        );
 
+        services.AddSingleton(pollingSettings);
         services.AddSingleton(proxySettings);
         services.AddHostedService<WhatsNewHostedService>();
         services.AddSingleton<IGithubProxy, GithubProxy>();
         services.AddSingleton<GithubInfoProvider>();
+        services.AddSingleton<WhatsNewPollingService>();
+        
     }
 }
