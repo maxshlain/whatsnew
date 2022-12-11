@@ -21,14 +21,14 @@ internal class WhatsNewHostedService : BackgroundService
                 break;
             }
 
-            await _service.PollAsync();
+            await _service.PollAsync(stoppingToken);
 
             if (stoppingToken.IsCancellationRequested)
             {
                 break;
             }
 
-            await _service.Delay();
+            await _service.Delay(stoppingToken);
         }
     }
 }

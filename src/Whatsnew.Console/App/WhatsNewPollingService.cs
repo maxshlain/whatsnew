@@ -2,7 +2,7 @@ using Microsoft.Extensions.Logging;
 using Whatsnew.Console;
 
 internal record WhatsNewPollingServiceSettings(
-    int PollingDelayInSeconds
+    int PollingDelayInMilliSeconds
 );
 
 internal class WhatsNewPollingService
@@ -21,8 +21,13 @@ internal class WhatsNewPollingService
         _settings = settings;
     }
 
-    public async Task PollAsync()
+    public async Task PollAsync(CancellationToken stoppingToken)
     {
+        if (stoppingToken.IsCancellationRequested)
+        {
+            return;
+        }
+
         var issue = new MonitoredItem(
             Url: "https://api.github.com/repos/maxshlain/whatsnew/issues/1",
             Type: "Github.Issue",
@@ -33,8 +38,11 @@ internal class WhatsNewPollingService
         _logger.LogInformation("Changed: {Changed}", changed);
     }
 
-    public Task Delay()
+    public Task Delay(CancellationToken stoppingToken)
     {
-        return Task.Delay(_settings.PollingDelayInSeconds * 1000);
+        return Task.Delay(
+            _settings.PollingDelayInMilliSeconds, 
+            stoppingToken
+        );
     }
 }

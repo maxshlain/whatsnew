@@ -19,7 +19,7 @@ public static class AppConfigurator
 
         var proxySettings = new GithubProxySettings(userName, pat);
         var pollingSettings = new WhatsNewPollingServiceSettings(
-            Convert.ToInt32(configuration.GetSection("PollingService").GetSection("PollingDelayInSeconds").Value)
+            Convert.ToInt32(configuration.GetSection("PollingService").GetSection("PollingDelayInMilliSeconds").Value)
         );
 
         services.AddSingleton(pollingSettings);
