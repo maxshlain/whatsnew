@@ -24,10 +24,10 @@ public static class AppConfigurator
 
         services.AddSingleton(pollingSettings);
         services.AddSingleton(proxySettings);
+        services.AddSingleton<IMonitoredItemsRepository, MonitoredItemsRepository>();
         services.AddHostedService<WhatsNewHostedService>();
         services.AddSingleton<IGithubProxy, GithubProxy>();
         services.AddSingleton<GithubInfoProvider>();
-        services.AddSingleton<WhatsNewPollingService>();
-        
+        services.AddSingleton<WhatsNewPollingService>();   
     }
 }

@@ -1,3 +1,4 @@
+using JsonFlatFileDataStore;
 using Microsoft.Extensions.Logging;
 using Whatsnew.Console;
 
@@ -10,15 +11,18 @@ internal class WhatsNewPollingService
     private readonly ILogger<WhatsNewPollingService> _logger;
     private readonly GithubInfoProvider _provider;
     private readonly WhatsNewPollingServiceSettings _settings;
+    private readonly IMonitoredItemsRepository _repository;
 
     public WhatsNewPollingService(
-        ILogger<WhatsNewPollingService> logger, 
+        ILogger<WhatsNewPollingService> logger,
+        WhatsNewPollingServiceSettings settings,
         GithubInfoProvider provider,
-        WhatsNewPollingServiceSettings settings)
+        IMonitoredItemsRepository repository)
     {
         _logger = logger;
-        _provider = provider;
         _settings = settings;
+        _provider = provider;
+        _repository = repository;
     }
 
     public async Task PollAsync(CancellationToken stoppingToken)
@@ -28,20 +32,29 @@ internal class WhatsNewPollingService
             return;
         }
 
-        var issue = new MonitoredItem(
-            Url: "https://api.github.com/repos/maxshlain/whatsnew/issues/1",
-            Type: "Github.Issue",
-            Status: ""
-        );
+        await PollGitHub(stoppingToken);
+    }
 
-        var (changed, item) = await _provider.TryGetInfoAsync(issue);
-        _logger.LogInformation("Changed: {Changed}", changed);
+    private async Task PollGitHub(CancellationToken stoppingToken)
+    {
+        var issues = _repository.GetAll("gitHubIssues");
+
+        foreach (var issue in issues)
+        {
+            if (stoppingToken.IsCancellationRequested)
+            {
+                return;
+            }
+
+            var (changed, item) = await _provider.TryGetInfoAsync(issue);
+            _logger.LogInformation("Changed: {Changed}", changed);
+        }
     }
 
     public Task Delay(CancellationToken stoppingToken)
     {
         return Task.Delay(
-            _settings.PollingDelayInMilliSeconds, 
+            _settings.PollingDelayInMilliSeconds,
             stoppingToken
         );
     }
